@@ -1,4 +1,9 @@
-# Phase 1 runtime/test deps (stack grows in later phases per spec)
+# runtime deps (stack grows in later phases per spec)
 lxml>=5.0
 python-docx>=1.1   # fixture generation in tests + convenience reads
+requests>=2.31
+rapidfuzz>=3.0
+typer>=0.12        # CLI arrives in Phase 4
+# test deps
 pytest>=8.0
+pytest-mock>=3.12

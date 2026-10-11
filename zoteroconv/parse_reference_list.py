@@ -906,6 +906,7 @@ class FieldItemMapping:
     ref_number: int | None
     method: str | None            # 'doi' | 'title' | 'title-fuzzy' | None
     candidates: list[int] = dc_field(default_factory=list)
+    item_data: dict | None = None  # full CSL-JSON itemData from the field payload
 
 
 def norm_doi(d: str) -> str:
@@ -953,6 +954,7 @@ def map_existing_fields_to_references(
                 title=title,
                 ref_number=None,
                 method=None,
+                item_data=data,
             )
             if doi:
                 hits = [
