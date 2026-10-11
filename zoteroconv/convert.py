@@ -175,6 +175,7 @@ def convert_document(
     output: str | None = None,
     renderer: PreviewRenderer | None = None,
     rng: random.Random | None = None,
+    limit_paragraphs: int | None = None,
     emit: Callable[[str], None] = print,
 ) -> ConversionResult:
     style_id = resolve_style_id(style)
@@ -198,6 +199,14 @@ def convert_document(
     # ---- plan clusters -------------------------------------------------------
     clusters: list[tuple[int, object, list]] = []   # (inline_index, match, items)
     for m in det.citations:
+        if (limit_paragraphs is not None and m.part == DOCUMENT_PART
+                and m.par_index >= limit_paragraphs):
+            result.unconverted.append(Unconverted(
+                m.part, m.par_index, m.text, m.numbers,
+                f"skipped: paragraph #{m.par_index} is beyond "
+                f"--limit-paragraphs {limit_paragraphs} (excerpt mode)",
+            ))
+            continue
         missing = [n for n in m.numbers if n not in item_by_ref]
         if missing:
             result.unconverted.append(Unconverted(
@@ -292,7 +301,12 @@ def convert_document(
         "replaced_typed_list": False, "removed_existing_bibl": False,
         "entries": 0, "written": False, "uncited_uris": len(kept_uncited),
     }
-    if do_bib and rl is not None and rl.heading is not None:
+    if do_bib and rl is not None and rl.heading is not None and not bib_entries:
+        # never trade a real reference list for an empty field (data loss)
+        result.notes.append(
+            "no bibliography entries could be rendered (no resolved items); "
+            "the existing reference list was left UNTOUCHED")
+    elif do_bib and rl is not None and rl.heading is not None:
         result.styles_injected = ensure_bibliography_style(pkg)
         if not result.styles_injected:
             from zoteroconv.structure_diff import style_definition_signature

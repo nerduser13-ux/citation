@@ -623,6 +623,30 @@ def test_convert_unresolved_refs_left_as_text(gen_fixtures, tmp_path):
     conv = DocxPackage.open(out)
     text = full_text(conv)
     assert "[1]" in text and "(2)" in text         # raw citations preserved
+    # the typed reference list must survive: never trade it for an empty field
+    assert find_zotero_fields(conv.document, DOCUMENT_PART) == []
+    assert "Title one of the study" in text and "Title three of analysis" in text
+    assert res.bibliography["written"] is False
+    assert any("UNTOUCHED" in n for n in res.notes)
+
+
+def test_convert_limit_paragraphs_excerpt(gen_fixtures, tmp_path):
+    # two_in_paragraph: both citations sit in paragraph #0 -> limit 1 keeps both
+    res, out, _ = convert_simple(gen_fixtures, tmp_path,
+                                 name="two_in_paragraph.docx",
+                                 limit_paragraphs=1)
+    assert len(res.fields) == 2 and res.unconverted == []
+    # limit_paragraphs=0 converts nothing but must NOT damage the document
+    res0, out0, _ = convert_simple(gen_fixtures, tmp_path,
+                                   name="two_in_paragraph.docx",
+                                   limit_paragraphs=0)
+    assert res0.fields == []
+    assert len(res0.unconverted) == 2
+    assert all("excerpt mode" in u.reason for u in res0.unconverted)
+    conv0 = DocxPackage.open(out0)
+    assert find_zotero_fields(conv0.document, DOCUMENT_PART) == []
+    assert "Prior work [1] and later analysis [2,3] agree." in full_text(conv0)
+    assert "Title one of the study" in full_text(conv0)   # list untouched
 
 
 # ---------------------------------------------------------------------------
