@@ -262,6 +262,76 @@ def test_local_write_probe_accepted_enables_local_writes(gen_fixtures):
     assert t.calls_to("api.zotero.org") == []
 
 
+def test_fetch_falls_back_to_format_csljson():
+    csl = [lib_item("K1", title="T one", issued={"date-parts": [["2020"]]})]
+
+    def get_items(call):
+        if call["params"].get("limit") == 1:          # reachability probe
+            return HttpResponse(200, json=[])
+        if call["params"].get("format") == "csljson":
+            return HttpResponse(200, json=csl)        # this Zotero version...
+        return HttpResponse(400, text="bad Accept")   # ...rejects the header
+
+    t = FakeTransport([("GET", re.escape(LOCAL_ITEMS_URL), get_items),
+                       ("POST", re.escape(LOCAL_ITEMS_URL),
+                        HttpResponse(405))])
+    acc = ZoteroAccess(t)
+    acc.detect()
+    items = acc.fetch_items_csl()
+    assert items == csl
+    assert any("format=csljson" in n for n in acc.notes)
+
+
+def test_fetch_converts_native_zotero_json():
+    zjson = [{"key": "ABCD1234",
+              "data": {"key": "ABCD1234", "itemType": "journalArticle",
+                       "title": "Converted title",
+                       "creators": [{"creatorType": "author",
+                                     "lastName": "Smith", "firstName": "J"}],
+                       "date": "2021-06-03",
+                       "publicationTitle": "Journal of Conversion",
+                       "volume": "9", "issue": "2", "pages": "1-9",
+                       "DOI": "10.1/conv", "extra": "PMID: 555"}}]
+    t = FakeTransport([("GET", re.escape(LOCAL_ITEMS_URL),
+                        HttpResponse(200, json=zjson))])
+    acc = ZoteroAccess(t)
+    acc.local_reachable = True
+    acc.read_mode = "local"
+    items = acc.fetch_items_csl()
+    assert len(items) == 1
+    c = items[0]
+    assert c["type"] == "article-journal"
+    assert c["title"] == "Converted title"
+    assert c["author"] == [{"family": "Smith", "given": "J"}]
+    assert c["issued"] == {"date-parts": [["2021", 6, 3]]}
+    assert c["container-title"] == "Journal of Conversion"
+    assert c["volume"] == "9" and c["issue"] == "2" and c["page"] == "1-9"
+    assert c["DOI"] == "10.1/conv" and c["PMID"] == "555"
+    assert c["id"].endswith("/items/ABCD1234")
+    assert any("converted to CSL-JSON locally" in n for n in acc.notes)
+
+
+def test_uncited_refs_left_out_by_default_and_kept_on_request(gen_fixtures):
+    # default: cited_numbers={1} -> refs 2,3 resolved read-only, not created
+    t = FakeTransport(dead_local() + web_routes(items=[]))
+    rep = resolve_document(DocxPackage.open(gen_fixtures["simple_bracket.docx"]),
+                           transport=t, api_key=SECRET_KEY, library_id="12345",
+                           cited_numbers={1})
+    assert rep.uncited == [2, 3]
+    assert rep.by_ref(1).status == "created"
+    assert rep.by_ref(2).status == "uncited-not-created"
+    assert rep.by_ref(3).status == "uncited-not-created"
+    assert any("never cited numerically" in n for n in rep.notes)
+    assert len(t.posts_to(WEB_ITEMS_URL)) == 1
+
+    # --keep-uncited: they get items like everything else
+    t2 = FakeTransport(dead_local() + web_routes(items=[]))
+    rep2 = resolve_document(DocxPackage.open(gen_fixtures["simple_bracket.docx"]),
+                            transport=t2, api_key=SECRET_KEY, library_id="12345",
+                            cited_numbers={1}, keep_uncited=True)
+    assert [rep2.by_ref(n).status for n in (1, 2, 3)] == ["created"] * 3
+
+
 def test_web_pagination():
     page1 = [lib_item(f"K{i:03d}", title=f"T{i}") for i in range(100)]
     page2 = [lib_item(f"K{i:03d}", title=f"T{i}") for i in range(100, 103)]
@@ -422,6 +492,9 @@ def test_crossref_weak_suggestion_keeps_placeholder(tmp_path):
     body = t.posts_to(WEB_ITEMS_URL)[0]["json"][0]
     assert "DOI" not in body                         # never fabricated
     assert body["title"] == "Title one of the study"
+    # user directive: low-confidence placeholders additionally get the review tag
+    assert body["tags"] == [{"tag": "zoteroconv-created"},
+                            {"tag": "zoteroconv-review"}]
 
 
 def test_crossref_cache_hits_once(tmp_path):
@@ -487,6 +560,7 @@ def test_pubmed_weak_suggestion_low_confidence(tmp_path):
     body = t.posts_to(WEB_ITEMS_URL)[0]["json"][0]
     assert "DOI" not in body
     assert body["extra"] == "PMID: 12345678"
+    assert {"tag": "zoteroconv-review"} in body["tags"]
 
 
 def test_pubmed_cache(tmp_path):
@@ -535,6 +609,8 @@ def test_creates_with_collection_and_payload(gen_fixtures):
     assert body["pages"] == "11-20"
     assert body["DOI"] == "10.1000/j2.2021.2"
     assert body["collections"] == ["COLL9"]      # decision 6: added to collection
+    # user directive: every created item is tagged for cleanup
+    assert body["tags"] == [{"tag": "zoteroconv-created"}]
 
 
 def test_existing_collection_reused(gen_fixtures):

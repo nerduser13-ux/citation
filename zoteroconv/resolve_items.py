@@ -274,29 +274,98 @@ class ZoteroAccess:
 
     # -- reads -----------------------------------------------------------------
 
+    @staticmethod
+    def _classify(items: Any) -> str:
+        """'csl' | 'zotero' | 'empty' | 'bad' -- shape detection, because the
+        Accept header is not honoured by every Zotero version."""
+        if not isinstance(items, list):
+            return "bad"
+        if not items:
+            return "empty"
+        first = items[0]
+        if not isinstance(first, dict):
+            return "bad"
+        if isinstance(first.get("data"), dict):
+            return "zotero"
+        if isinstance(first.get("id"), str):
+            return "csl"
+        return "bad"
+
+    def _fetch_page(self, url: str, start: int, use_format_param: bool,
+                    accept_csl: bool):
+        params: dict[str, Any] = {"limit": 100, "start": start}
+        if use_format_param:
+            params["format"] = "csljson"
+        headers = {"Accept": CSL_JSON_ACCEPT} if accept_csl else {}
+        if self.write_channel == "web" or self.read_mode == "web":
+            headers["Zotero-API-Key"] = self.api_key or ""
+            headers["Zotero-API-Version"] = "3"
+        resp = self.transport.request("GET", url, params=params,
+                                      headers=headers, timeout=self.timeout)
+        if resp.status != 200:
+            return None, resp.status
+        return resp.json, resp.status
+
     def fetch_items_csl(self) -> list[dict]:
+        """Fetch library items as CSL-JSON.  Tries, in order:
+        (1) Accept: application/vnd.citationstyles.csl+json
+        (2) ?format=csljson          (user-directed fallback)
+        (3) whatever the API returns natively -- Zotero JSON gets converted
+            to CSL-JSON locally.  The working representation is reported."""
         if self.read_mode == "offline":
             self.notes.append("library not fetched (offline): treating as empty")
             return []
         url = self._base() + "/items"
-        out: list[dict] = []
-        start = 0
-        for _ in range(50):  # pagination safety cap
-            resp = self.transport.request(
-                "GET", url, params={"limit": 100, "start": start},
-                headers=self._headers(), timeout=self.timeout,
+
+        configs = [  # (use_format_param, accept_csl)
+            (False, True),
+            (True, False),
+        ]
+        chosen = None
+        first_payload = None
+        for cfg in configs:
+            payload, status = self._fetch_page(url, 0, *cfg)
+            kind = self._classify(payload)
+            if kind in ("csl", "empty"):
+                chosen, first_payload = ("csl", cfg), payload
+                break
+            if kind == "zotero":
+                chosen, first_payload = ("zotero", cfg), payload
+                break
+            # non-200 or unexpected shape: try the next config
+        if chosen is None:
+            self.notes.append(
+                f"item fetch failed with Accept header and format=csljson "
+                f"(last HTTP {status}); treating library as empty"
             )
-            if resp.status != 200 or not isinstance(resp.json, list):
-                self.notes.append(
-                    f"item fetch failed (HTTP {resp.status}); using {len(out)} items"
-                )
-                break
-            out.extend(resp.json)
-            if len(resp.json) < 100:
-                break
-            start += 100
-        self.learn_uri_prefix(out)
-        return out
+            return []
+
+        rep, cfg = chosen
+        if rep == "csl" and cfg == (False, True):
+            self.notes.append("items fetched as CSL-JSON via Accept header")
+        elif rep == "csl":
+            self.notes.append("items fetched as CSL-JSON via ?format=csljson "
+                              "(Accept header did not work)")
+        else:
+            self.notes.append("API returned Zotero item JSON; converted to "
+                              "CSL-JSON locally (fallback path)")
+
+        items: list[dict] = list(first_payload or [])
+        if len(items) >= 100:  # paginate with the working configuration
+            start = 100
+            for _ in range(49):
+                payload, status = self._fetch_page(url, start, *cfg)
+                if not isinstance(payload, list) or not payload:
+                    break
+                items.extend(payload)
+                if len(payload) < 100:
+                    break
+                start += 100
+        if rep == "zotero":
+            items = [zotero_json_to_csl(it, self) for it in items]
+            items = [it for it in items if it is not None]
+        self.learn_uri_prefix(items)
+        return items
 
     def learn_uri_prefix(self, items_csl: list[dict]) -> None:
         """Sample-format URIs are http://zotero.org/users/local/<token>/items/<key>;
@@ -361,6 +430,94 @@ class ZoteroAccess:
 # ---------------------------------------------------------------------------
 # library items + stable numeric ids
 # ---------------------------------------------------------------------------
+
+# reverse of the creation maps: Zotero item JSON -> CSL-JSON (fallback when
+# neither the Accept header nor ?format=csljson yields CSL-JSON)
+Z2C_TYPE = {
+    "journalArticle": "article-journal",
+    "magazineArticle": "article-magazine",
+    "newspaperArticle": "article-newspaper",
+    "book": "book",
+    "bookSection": "chapter",
+    "conferencePaper": "paper-conference",
+    "report": "report",
+    "thesis": "thesis",
+    "webpage": "webpage",
+    "document": "document",
+}
+Z2C_CONTAINER = {
+    "publicationTitle": "container-title",
+    "bookTitle": "container-title",
+    "websiteTitle": "container-title",
+    "proceedingsName": "container-title",
+    "seriesTitle": "container-title",
+}
+Z2C_PUBLISHER = {"publisher": "publisher", "institution": "publisher",
+                 "university": "publisher"}
+Z2C_SIMPLE = {
+    "title": "title", "volume": "volume", "issue": "issue", "pages": "page",
+    "DOI": "DOI", "ISBN": "ISBN", "ISSN": "ISSN", "url": "URL",
+    "language": "language", "edition": "edition",
+    "abstractNote": "abstract", "place": "publisher-place",
+    "reportNumber": "number", "number": "number",
+}
+
+
+def zotero_json_to_csl(item: dict, access: "ZoteroAccess") -> dict | None:
+    """Convert one Zotero API item ({key, data:{...}}) to CSL-JSON.  Only
+    fields present in the source are emitted; nothing is invented."""
+    from zoteroconv.parse_reference_list import parse_dateish
+
+    data = item.get("data") or {}
+    key = data.get("key") or item.get("key")
+    if not key:
+        return None
+    csl: dict[str, Any] = {
+        "id": access.item_uri(key),
+        "type": Z2C_TYPE.get(data.get("itemType") or "document", "document"),
+    }
+    for z_key, csl_key in Z2C_SIMPLE.items():
+        if data.get(z_key):
+            csl[csl_key] = data[z_key]
+    for z_key, csl_key in Z2C_CONTAINER.items():
+        if data.get(z_key):
+            csl[csl_key] = data[z_key]
+            break
+    for z_key, csl_key in Z2C_PUBLISHER.items():
+        if data.get(z_key):
+            csl[csl_key] = data[z_key]
+            break
+    if data.get("thesisType"):
+        csl["genre"] = data["thesisType"]
+    creators = data.get("creators") or []
+    for creator_type, csl_key in (("author", "author"), ("editor", "editor")):
+        people = []
+        for c in creators:
+            if (c.get("creatorType") or "author") != creator_type:
+                continue
+            if c.get("name"):
+                people.append({"name": c["name"]})
+            else:
+                p = {}
+                if c.get("lastName"):
+                    p["family"] = c["lastName"]
+                if c.get("firstName"):
+                    p["given"] = c["firstName"]
+                if p:
+                    people.append(p)
+        if people:
+            csl[csl_key] = people
+    for z_key, csl_key in (("date", "issued"), ("accessDate", "accessed")):
+        if data.get(z_key):
+            parts = parse_dateish(str(data[z_key]))
+            if parts:
+                csl[csl_key] = {"date-parts": [parts]}
+    extra = str(data.get("extra") or "")
+    m = re.search(r"PMID:\s*(\d+)", extra)
+    if m:
+        csl["PMID"] = m.group(1)
+    return csl
+
 
 def stable_numeric_id(seed: str) -> int:
     """Deterministic 8-digit positive int, the *form* the sample uses for
@@ -865,6 +1022,7 @@ class ResolutionReport:
     collection_name: str | None = None
     collection_key: str | None = None
     created_keys: list[str] = dc_field(default_factory=list)
+    uncited: list[int] = dc_field(default_factory=list)
     notes: list[str] = dc_field(default_factory=list)
 
     def by_ref(self, n: int) -> RefResolution | None:
@@ -929,6 +1087,8 @@ def resolve_document(
     doc_name: str | None = None,
     emit: Callable[[str], None] = print,
     reflist: ReferenceList | None = None,
+    cited_numbers: set[int] | None = None,
+    keep_uncited: bool = False,
 ) -> ResolutionReport:
     """Resolve every reference of ``pkg`` against Zotero.  Credentials are
     taken from parameters or the environment (ZT_API_KEY, ZT_LIBRARY_ID,
@@ -996,7 +1156,36 @@ def resolve_document(
                 ],
             ))
             continue
+        if (cited_numbers is not None and ref.number not in cited_numbers
+                and not keep_uncited):
+            # user directive: uncited refs are left OUT by default -- resolve
+            # read-only against the library, but never enrich or create
+            outcome = match_reference(ref.csl, library, threshold)
+            res = RefResolution(
+                ref_number=ref.number, raw=ref.raw, parsed_csl=ref.csl,
+                status="matched" if outcome.item else "uncited-not-created",
+                method=outcome.method, item=outcome.item,
+                candidates=outcome.candidates, messages=list(outcome.messages),
+            )
+            if outcome.item is None:
+                res.messages.append(
+                    "reference is never cited numerically; left out of the "
+                    "bibliography and NOT created (use --keep-uncited to keep it)"
+                )
+            report.resolutions.append(res)
+            continue
         _resolve_one(ref, library, crossref, pubmed, threshold, report)
+
+    if cited_numbers is not None:
+        report.uncited = sorted(
+            r.number for r in rl.references
+            if r.number not in cited_numbers and r.number not in mapped_by_ref
+        )
+        if report.uncited:
+            report.notes.append(
+                f"references never cited numerically: {report.uncited} "
+                f"({'kept via uncited array' if keep_uncited else 'left OUT of the bibliography by default; see --keep-uncited'})"
+            )
 
     _create_missing(report, access, rl, library, max_new_items=max_new_items,
                     dry_run=dry_run, confirm=confirm, collection_name=collection_name,
@@ -1169,6 +1358,11 @@ def _create_missing(
             continue
         z_item, conv_notes = csl_to_zotero_item(r.effective_csl())
         r.messages.extend(conv_notes)
+        # user directive: tag creates so they can be found and cleaned up
+        tags = [{"tag": "zoteroconv-created"}]
+        if r.status in ("crossref-low-confidence", "pubmed-low-confidence"):
+            tags.append({"tag": "zoteroconv-review"})
+        z_item["tags"] = tags
         if coll_key:
             z_item["collections"] = [coll_key]
         resp = access.create_items([z_item])
