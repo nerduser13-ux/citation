@@ -1,0 +1,3 @@
+# Phase 0 runtime deps (stack grows in later phases per spec)
+lxml>=5.0
+pytest>=8.0

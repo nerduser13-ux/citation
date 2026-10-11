@@ -1,0 +1,338 @@
+Inspecting: tests/fixtures/zotero_sample.docx
+
+==============================================================================
+SECTION A: ZIP PARTS + raw byte scan for Zotero markers
+==============================================================================
+part                                              size compressed
+[Content_Types].xml                               1437        357
+_rels/.rels                                        737        254
+word/document.xml                                 7004       2176
+word/_rels/document.xml.rels                       817        244
+word/theme/theme1.xml                             8399       1741
+word/settings.xml                                 3330       1127
+word/styles.xml                                  43067       4152
+word/webSettings.xml                              1069        367
+word/fontTable.xml                                1833        528
+docProps/core.xml                                  761        372
+docProps/app.xml                                   718        380
+docProps/custom.xml                                829        433
+
+------------------------------------------------------------------------------
+A.2 raw occurrence counts per part (bytes, before any XML parsing)
+------------------------------------------------------------------------------
+part                                           ZOTERO_ITEM  ZOTERO_BIBL  ZOTERO_PREF      fldChar
+word/document.xml                                        1            1            0           12
+docProps/custom.xml                                      0            0            2            0
+(parts with zero occurrences of all markers are omitted)
+
+==============================================================================
+SECTION B: ZOTERO FIELDS (word/document.xml, footnotes.xml, endnotes.xml)
+==============================================================================
+
+word/document.xml: 2 field(s) total, 2 Zotero field(s)
+
+------------------------------------------------------------------------------
+B.1 Zotero field in word/document.xml | instr starts: 'ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"7yuwLzUY","pro'
+------------------------------------------------------------------------------
+location: begin run in paragraph #0 (style=None), end run in paragraph #0
+paragraph text preview: 'Impact on employment/labour market. Literature on adoption of AI technology in financial services deals mainly with how '
+
+fldChar elements (verbatim):
+  begin   : <w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="begin"/>
+  separate: <w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="separate"/>
+  end     : <w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="end"/>
+
+instrText runs: 1
+  instrText fragment 1 (xml:space='preserve'): ' ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"7yuwLzUY","properties":{"unsorted":false,"formattedCitation":"(Havryk and Nazarova, 2024)","plainCitation":"(Havryk and Nazarova, 2024)","noteIndex":0},"citationItems":[{"id":1,"uris":["http://zotero.org/users/local/XXnzLBe9/items/NU469JIQ"],"itemData":{"id":1,"type":"article-journal","abstract":"The article examines the role and impact of artificial intelligence (AI) in the financial sector to determine its impact on the future workforce and the US\'s pivotal role in shaping technology trends around the world. Drawing from labor economics and sociology, it analyzes how AI adoption affects job roles, skills demanded, and employment patterns in the financial industry. The work analyzes the current state of the use of AI in finance, examines its impact on changes in labor markets and employment structure, and identifies key factors shaping the development of the financial sector under the influence of technological innovation.","container-title":"International Science Journal of Management, Economics & Finance","DOI":"10.46299/j.isjmef.20240303.01","ISSN":"2720-6394","issue":"3","journalAbbreviation":"ISJMEF","license":"https://creativecommons.org/licenses/by/4.0","page":"1-9","source":"DOI.org (Crossref)","title":"Artificial intelligence and its role in the labor market and financial sector itself: US point of view","title-short":"Artificial intelligence and its role in the labor market and financial sector itself","volume":"3","author":[{"family":"Havryk","given":"Alina"},{"family":"Nazarova","given":"Tetiana"}],"issued":{"date-parts":[["2024",6,1]]}}}],"schema":"https://github.com/citation-style-language/schema/raw/master/csl-citation.json"} '
+
+instrText concatenated (raw):
+ ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"7yuwLzUY","properties":{"unsorted":false,"formattedCitation":"(Havryk and Nazarova, 2024)","plainCitation":"(Havryk and Nazarova, 2024)","noteIndex":0},"citationItems":[{"id":1,"uris":["http://zotero.org/users/local/XXnzLBe9/items/NU469JIQ"],"itemData":{"id":1,"type":"article-journal","abstract":"The article examines the role and impact of artificial intelligence (AI) in the financial sector to determine its impact on the future workforce and the US's pivotal role in shaping technology trends around the world. Drawing from labor economics and sociology, it analyzes how AI adoption affects job roles, skills demanded, and employment patterns in the financial industry. The work analyzes the current state of the use of AI in finance, examines its impact on changes in labor markets and employment structure, and identifies key factors shaping the development of the financial sector under the influence of technological innovation.","container-title":"International Science Journal of Management, Economics & Finance","DOI":"10.46299/j.isjmef.20240303.01","ISSN":"2720-6394","issue":"3","journalAbbreviation":"ISJMEF","license":"https://creativecommons.org/licenses/by/4.0","page":"1-9","source":"DOI.org (Crossref)","title":"Artificial intelligence and its role in the labor market and financial sector itself: US point of view","title-short":"Artificial intelligence and its role in the labor market and financial sector itself","volume":"3","author":[{"family":"Havryk","given":"Alina"},{"family":"Nazarova","given":"Tetiana"}],"issued":{"date-parts":[["2024",6,1]]}}}],"schema":"https://github.com/citation-style-language/schema/raw/master/csl-citation.json"} 
+
+instrText JSON payload (pretty-printed):
+{
+  "citationID": "7yuwLzUY",
+  "properties": {
+    "unsorted": false,
+    "formattedCitation": "(Havryk and Nazarova, 2024)",
+    "plainCitation": "(Havryk and Nazarova, 2024)",
+    "noteIndex": 0
+  },
+  "citationItems": [
+    {
+      "id": 1,
+      "uris": [
+        "http://zotero.org/users/local/XXnzLBe9/items/NU469JIQ"
+      ],
+      "itemData": {
+        "id": 1,
+        "type": "article-journal",
+        "abstract": "The article examines the role and impact of artificial intelligence (AI) in the financial sector to determine its impact on the future workforce and the US's pivotal role in shaping technology trends around the world. Drawing from labor economics and sociology, it analyzes how AI adoption affects job roles, skills demanded, and employment patterns in the financial industry. The work analyzes the current state of the use of AI in finance, examines its impact on changes in labor markets and employment structure, and identifies key factors shaping the development of the financial sector under the influence of technological innovation.",
+        "container-title": "International Science Journal of Management, Economics & Finance",
+        "DOI": "10.46299/j.isjmef.20240303.01",
+        "ISSN": "2720-6394",
+        "issue": "3",
+        "journalAbbreviation": "ISJMEF",
+        "license": "https://creativecommons.org/licenses/by/4.0",
+        "page": "1-9",
+        "source": "DOI.org (Crossref)",
+        "title": "Artificial intelligence and its role in the labor market and financial sector itself: US point of view",
+        "title-short": "Artificial intelligence and its role in the labor market and financial sector itself",
+        "volume": "3",
+        "author": [
+          {
+            "family": "Havryk",
+            "given": "Alina"
+          },
+          {
+            "family": "Nazarova",
+            "given": "Tetiana"
+          }
+        ],
+        "issued": {
+          "date-parts": [
+            [
+              "2024",
+              6,
+              1
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "schema": "https://github.com/citation-style-language/schema/raw/master/csl-citation.json"
+}
+
+complete field XML (begin fldChar run -> end fldChar run;
+intermediate whole paragraphs appear as <w:p>; the wrapper
+<w:field-range> is synthetic, added by this script for display):
+<w:field-range xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:r>
+    <w:fldChar w:fldCharType="begin"/>
+  </w:r>
+  <w:r>
+    <w:instrText xml:space="preserve"> ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"7yuwLzUY","properties":{"unsorted":false,"formattedCitation":"(Havryk and Nazarova, 2024)","plainCitation":"(Havryk and Nazarova, 2024)","noteIndex":0},"citationItems":[{"id":1,"uris":["http://zotero.org/users/local/XXnzLBe9/items/NU469JIQ"],"itemData":{"id":1,"type":"article-journal","abstract":"The article examines the role and impact of artificial intelligence (AI) in the financial sector to determine its impact on the future workforce and the US's pivotal role in shaping technology trends around the world. Drawing from labor economics and sociology, it analyzes how AI adoption affects job roles, skills demanded, and employment patterns in the financial industry. The work analyzes the current state of the use of AI in finance, examines its impact on changes in labor markets and employment structure, and identifies key factors shaping the development of the financial sector under the influence of technological innovation.","container-title":"International Science Journal of Management, Economics &amp; Finance","DOI":"10.46299/j.isjmef.20240303.01","ISSN":"2720-6394","issue":"3","journalAbbreviation":"ISJMEF","license":"https://creativecommons.org/licenses/by/4.0","page":"1-9","source":"DOI.org (Crossref)","title":"Artificial intelligence and its role in the labor market and financial sector itself: US point of view","title-short":"Artificial intelligence and its role in the labor market and financial sector itself","volume":"3","author":[{"family":"Havryk","given":"Alina"},{"family":"Nazarova","given":"Tetiana"}],"issued":{"date-parts":[["2024",6,1]]}}}],"schema":"https://github.com/citation-style-language/schema/raw/master/csl-citation.json"} </w:instrText>
+  </w:r>
+  <w:r>
+    <w:fldChar w:fldCharType="separate"/>
+  </w:r>
+  <w:r w:rsidRPr="00B27459">
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+    </w:rPr>
+    <w:t>(</w:t>
+  </w:r>
+  <w:proofErr w:type="spellStart"/>
+  <w:r w:rsidRPr="00B27459">
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+    </w:rPr>
+    <w:t>Havryk</w:t>
+  </w:r>
+  <w:proofErr w:type="spellEnd"/>
+  <w:r w:rsidRPr="00B27459">
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+    </w:rPr>
+    <w:t xml:space="preserve"> and Nazarova, 2024)</w:t>
+  </w:r>
+  <w:r>
+    <w:fldChar w:fldCharType="end"/>
+  </w:r>
+</w:field-range>
+
+------------------------------------------------------------------------------
+B.2 Zotero field in word/document.xml | instr starts: 'ADDIN ZOTERO_BIBL {"uncited":[],"omitted":[],"custom":[]} CS'
+------------------------------------------------------------------------------
+location: begin run in paragraph #3 (style='Bibliography'), end run in paragraph #4
+paragraph text preview: 'Havryk, A., Nazarova, T., 2024. Artificial intelligence and its role in the labor market and financial sector itself: US'
+
+fldChar elements (verbatim):
+  begin   : <w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="begin"/>
+  separate: <w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="separate"/>
+  end     : <w:fldChar xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:fldCharType="end"/>
+
+instrText runs: 1
+  instrText fragment 1 (xml:space='preserve'): ' ADDIN ZOTERO_BIBL {"uncited":[],"omitted":[],"custom":[]} CSL_BIBLIOGRAPHY '
+
+instrText concatenated (raw):
+ ADDIN ZOTERO_BIBL {"uncited":[],"omitted":[],"custom":[]} CSL_BIBLIOGRAPHY 
+
+instrText JSON payload (pretty-printed):
+{
+  "uncited": [],
+  "omitted": [],
+  "custom": []
+}
+trailing text after JSON: 'CSL_BIBLIOGRAPHY'
+
+complete field XML (begin fldChar run -> end fldChar run;
+intermediate whole paragraphs appear as <w:p>; the wrapper
+<w:field-range> is synthetic, added by this script for display):
+<w:field-range xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">
+  <w:r>
+    <w:fldChar w:fldCharType="begin"/>
+  </w:r>
+  <w:r>
+    <w:instrText xml:space="preserve"> ADDIN ZOTERO_BIBL {"uncited":[],"omitted":[],"custom":[]} CSL_BIBLIOGRAPHY </w:instrText>
+  </w:r>
+  <w:r>
+    <w:fldChar w:fldCharType="separate"/>
+  </w:r>
+  <w:proofErr w:type="spellStart"/>
+  <w:r w:rsidRPr="00B27459">
+    <w:t>Havryk</w:t>
+  </w:r>
+  <w:proofErr w:type="spellEnd"/>
+  <w:r w:rsidRPr="00B27459">
+    <w:t>, A., Nazarova, T., 2024. Artificial intelligence and its role in the labor market and financial sector itself: US point of view. Int. Sci. J. Manag. Econ. Finance 3, 1–9. https://doi.org/10.46299/j.isjmef.20240303.01</w:t>
+  </w:r>
+  <w:p w14:paraId="4754A276" w14:textId="3F5ABDEB" w:rsidR="00B27459" w:rsidRDefault="00B27459">
+    <w:r>
+      <w:fldChar w:fldCharType="end"/>
+    </w:r>
+  </w:p>
+</w:field-range>
+
+word/footnotes.xml: PART NOT PRESENT in this docx
+
+word/endnotes.xml: PART NOT PRESENT in this docx
+
+==============================================================================
+SECTION C: docProps/custom.xml (full contents, escaped + unescaped)
+==============================================================================
+C.1 raw file contents exactly as stored in the zip
+    (ZOTERO_PREF values appear here in XML-ESCAPED form):
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="ZOTERO_PREF_1"><vt:lpwstr>&lt;data data-version="3" zotero-version="10.0.6"&gt;&lt;session id="GahNCFud"/&gt;&lt;style id="http://www.zotero.org/styles/elsevier-harvard" hasBibliography="1" bibliographyStyleHasBeenSet="1"/&gt;&lt;prefs&gt;&lt;pref name="fieldType" value="Field"/&gt;&lt;pref name="automaticJournal</vt:lpwstr></property><property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="ZOTERO_PREF_2"><vt:lpwstr>Abbreviations" value="true"/&gt;&lt;/prefs&gt;&lt;/data&gt;</vt:lpwstr></property></Properties>
+
+------------------------------------------------------------------------------
+C.2 every custom property (values UNESCAPED)
+------------------------------------------------------------------------------
+
+name='ZOTERO_PREF_1'  fmtid={D5CDD505-2E9C-101B-9397-08002B2CF9AE}  pid=2  vt-type=lpwstr  value-length=255
+  value (unescaped): <data data-version="3" zotero-version="10.0.6"><session id="GahNCFud"/><style id="http://www.zotero.org/styles/elsevier-harvard" hasBibliography="1" bibliographyStyleHasBeenSet="1"/><prefs><pref name="fieldType" value="Field"/><pref name="automaticJournal
+  value (re-escaped, as stored inside <vt:lpwstr>):
+    &lt;data data-version="3" zotero-version="10.0.6"&gt;&lt;session id="GahNCFud"/&gt;&lt;style id="http://www.zotero.org/styles/elsevier-harvard" hasBibliography="1" bibliographyStyleHasBeenSet="1"/&gt;&lt;prefs&gt;&lt;pref name="fieldType" value="Field"/&gt;&lt;pref name="automaticJournal
+  value alone does NOT parse as XML: AttValue: ' expected, line 1, column 256 (<string>, line 1)
+  (this is expected when the value is a CHUNK of a larger
+   document -- see SECTION F for the concatenation test)
+
+name='ZOTERO_PREF_2'  fmtid={D5CDD505-2E9C-101B-9397-08002B2CF9AE}  pid=3  vt-type=lpwstr  value-length=44
+  value (unescaped): Abbreviations" value="true"/></prefs></data>
+  value (re-escaped, as stored inside <vt:lpwstr>):
+    Abbreviations" value="true"/&gt;&lt;/prefs&gt;&lt;/data&gt;
+  value alone does NOT parse as XML: Start tag expected, '<' not found, line 1, column 1 (<string>, line 1)
+  (this is expected when the value is a CHUNK of a larger
+   document -- see SECTION F for the concatenation test)
+
+==============================================================================
+SECTION D: [Content_Types].xml entry and _rels/.rels relationship for custom.xml
+==============================================================================
+[Content_Types].xml entries pointing at docProps/custom.xml:
+  <Override xmlns="http://schemas.openxmlformats.org/package/2006/content-types" PartName="/docProps/custom.xml" ContentType="application/vnd.openxmlformats-officedocument.custom-properties+xml"/>
+
+_rels/.rels relationships pointing at docProps/custom.xml:
+  <Relationship xmlns="http://schemas.openxmlformats.org/package/2006/relationships" Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties" Target="docProps/custom.xml"/>
+
+==============================================================================
+SECTION E: paragraph properties/styles around the bibliography field; run properties of citation previews
+==============================================================================
+
+------------------------------------------------------------------------------
+E: ZOTERO_ITEM field in word/document.xml
+------------------------------------------------------------------------------
+
+paragraphs spanned by the field: #0 .. #0 (1 paragraph(s))
+
+  paragraph #0: style=None text='Impact on employment/labour market. Literature on adoption of AI technology in financial services de'
+  w:pPr:
+    (none)
+
+run properties of the field RESULT runs (preview text between separate and end):
+  run text='(' rPr=<w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/></w:rPr>
+  run text='Havryk' rPr=<w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/></w:rPr>
+  run text=' and Nazarova, 2024)' rPr=<w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/></w:rPr>
+
+fldChar-carrying runs (begin/separate/end), with their rPr:
+  begin: run rPr=(no rPr)
+  separate: run rPr=(no rPr)
+  end: run rPr=(no rPr)
+
+------------------------------------------------------------------------------
+E: ZOTERO_BIBL field in word/document.xml
+------------------------------------------------------------------------------
+paragraph BEFORE the field begin (usually the heading):
+  index=#2 style=None text='References'
+  its w:pPr:
+    (none)
+
+paragraphs spanned by the field: #3 .. #4 (2 paragraph(s))
+
+  paragraph #3: style='Bibliography' text='Havryk, A., Nazarova, T., 2024. Artificial intelligence and its role in the labor market and financi'
+  w:pPr:
+    <w:pPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      <w:pStyle w:val="Bibliography"/>
+    </w:pPr>
+
+  paragraph #4: style=None text=''
+  w:pPr:
+    (none)
+
+run properties of the field RESULT runs (preview text between separate and end):
+  run text='Havryk' rPr=(no rPr)
+  run text=', A., Nazarova, T., 2024. Artificial intelligence and its ro' rPr=(no rPr)
+
+fldChar-carrying runs (begin/separate/end), with their rPr:
+  begin: run rPr=(no rPr)
+  separate: run rPr=(no rPr)
+  end: run rPr=(no rPr)
+
+------------------------------------------------------------------------------
+E.2 style definitions referenced above (from word/styles.xml)
+------------------------------------------------------------------------------
+
+w:styleId='Bibliography':
+  <w:style xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:type="paragraph" w:styleId="Bibliography">
+    <w:name w:val="Bibliography"/>
+    <w:basedOn w:val="Normal"/>
+    <w:next w:val="Normal"/>
+    <w:uiPriority w:val="37"/>
+    <w:unhideWhenUsed/>
+    <w:rsid w:val="00B27459"/>
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      <w:ind w:left="720" w:hanging="720"/>
+    </w:pPr>
+  </w:style>
+
+==============================================================================
+SECTION F: ZOTERO_PREF value splitting analysis
+==============================================================================
+2 ZOTERO_PREF* property/properties found:
+
+  name='ZOTERO_PREF_1' pid=2 value-length=255
+    first 70 chars: '<data data-version="3" zotero-version="10.0.6"><session id="GahNCFud"/'
+    last  70 chars: 'efs><pref name="fieldType" value="Field"/><pref name="automaticJournal'
+
+  name='ZOTERO_PREF_2' pid=3 value-length=44
+    first 70 chars: 'Abbreviations" value="true"/></prefs></data>'
+    last  70 chars: 'Abbreviations" value="true"/></prefs></data>'
+
+All chunks except the last have identical length 255 -> fixed-size character split at 255 chars.
+Chunk boundaries (last 40 chars of chunk N | first 40 chars of chunk N+1):
+  ZOTERO_PREF_1: ...'ue="Field"/><pref name="automaticJournal'
+  ZOTERO_PREF_2: 'Abbreviations" value="true"/></prefs></d'...
+
+pid values in suffix order: [2, 3] (ascending)
+
+Concatenated value length: 299
+Concatenation parses as well-formed XML. Pretty-printed:
+  <data data-version="3" zotero-version="10.0.6">
+    <session id="GahNCFud"/>
+    <style id="http://www.zotero.org/styles/elsevier-harvard" hasBibliography="1" bibliographyStyleHasBeenSet="1"/>
+    <prefs>
+      <pref name="fieldType" value="Field"/>
+      <pref name="automaticJournalAbbreviations" value="true"/>
+    </prefs>
+  </data>
